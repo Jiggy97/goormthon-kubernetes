@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-spring-deployment
+  labels:
+    app: hello-spring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-spring
+  template:
+    metadata:
+      labels:
+        app: hello-spring
+    spec:
+      containers:
+      - name: hello-spring
+        image: iamjiggy/hello-spring:latest
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://hello-spring-mysql-svc:3306/mysql-spring"
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: mysql-config
+              key: mysql_user
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: secret-mysql
+              key: mysql_user_pass
+        ports:
+        - containerPort: 8080
+

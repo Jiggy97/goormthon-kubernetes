@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-spring-mysql-svc
+  labels:
+    app: hello-spring-mysql
+spec:
+  selector:
+    app: hello-spring-mysql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hello-spring-mysql-pv-claim
+  labels:
+    app: hello-spring-mysql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-spring-mysql-deploy
+  labels:
+    app: hello-spring-mysql
+spec:
+  selector:
+    matchLabels:
+      app: hello-spring-mysql
+      tier: mysql
+  template:
+    metadata:
+      labels:
+        app: hello-spring-mysql
+        tier: mysql
+    spec:
+      containers:
+      - image: mysql:8.2
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql_root_pass
+        - name: MYSQL_DATABASE
+          value: "mysql-spring"
+        - name: MYSQL_USER
+          valueFrom:
+            configMapKeyRef:
+              name: mysql-config
+              key: mysql_user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql_user_pass
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: hello-spring-mysql-pv-claim
+

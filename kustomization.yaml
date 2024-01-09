@@ -1,0 +1,6 @@
+resources:
+  - yaml/mysql-deployment.yaml
+  - yaml/hello-spring-deployment.yaml
+  - yaml/hello-spring-service.yaml
+  - yaml/secret-mysql.yaml
+  - yaml/nginx-ingress.yaml
